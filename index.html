@@ -41,7 +41,7 @@
     <button class="btn btn-outline" onclick="startQuiz('p4')">Part 4: 異常處理與分銷商收貨規範</button>
     <button class="btn btn-outline" onclick="startQuiz('p5')">Part 5: 卡板堆放與出貨防護指南</button>
     <button class="btn btn-outline" onclick="startQuiz('p6')">Part 6: 包裝物料管理與過期處理</button>
-    <button class="btn btn-outline" onclick="startQuiz('p7')">Part 7: 特採品(Concession)處理規範</button>
+    <button class="btn btn-outline" onclick="startQuiz('p7')">Part 7: 特採品 (Concession) 處理規範 [更新版]</button>
 </div>
 
 <div class="container" id="quiz-section" style="display:none;">
@@ -57,6 +57,7 @@ let wrongList = [];
 let currentQuestions = [];
 
 const allQuizData = {
+    // P1 - P6 保持不變 (略，請確保包含你之前的數據)
     p1: [
         { q: "在 Inbound 流程中，SAP 會自動執行哪兩個動作到 in-transit plant？", options: ["GR 和 IR", "TO 和 SO", "PO 和 PR", "AWB 和 CO"], ans: 0 },
         { q: "誰負責根據 DVAI 報告將 GR 記錄過帳 (post) 到倉庫系統？", options: ["EDMH BU", "Warehouse", "LSMHK Office", "SAP 系統"], ans: 2 },
@@ -132,28 +133,28 @@ const allQuizData = {
         { q: "海關檢查後須註明？", options: ["姓名", "時間", "在哪層發現損壞", "地址"], ans: 2 },
         { q: "POWERTEK 出貨須有？", options: ["司機簽", "Sony 入倉章", "價格", "廣告"], ans: 1 },
         { q: "EDOM 缺入倉章應？", options: ["視為異常聯絡 LSMHK", "自行補蓋", "不理", "手寫"], ans: 0 },
-        { q: "非完整箱應貼？", options: ["白紙", "S/N 清單", "平面圖", "合格標"], ans: 1 },
+        { q: "非完整箱 (Partial) 應貼？", options: ["白紙", "S/N 清單", "平面圖", "合格標"], ans: 1 },
         { q: "S/N 清單包含？", options: ["車牌", "訂單/型號/內外箱 S/N", "員編", "地址"], ans: 1 },
         { q: "Partial 標籤位置？", options: ["箱內", "更換後箱外", "單據", "門口"], ans: 1 },
         { q: "描述海關檢查應含？", options: ["損壞位置", "工具", "天氣", "順序"], ans: 0 },
         { q: "簽單前核對？", options: ["身分", "外箱數與單據完整性", "油量", "電話"], ans: 1 },
         { q: "數量不符列出？", options: ["總庫存", "具體短少/多出數", "下次預計", "職稱"], ans: 1 },
         { q: "資訊錄入要求？", options: ["明確清晰", "縮寫", "口頭", "不重要"], ans: 0 },
-        { q: "C-3 遺失應？", options: ["手寫", "異常依指示重印", "代替", "入庫"], ans: 1 },
+        { q: "C-3 標籤遺失應？", options: ["手寫", "異常依指示重印", "代替", "入庫"], ans: 1 },
         { q: "主管職責？", options: ["搬運", "複核簽名", "聯絡海關", "補箱"], ans: 1 },
         { q: "日期章以何為準？", options: ["生成日", "實際檢查日", "預計日", "隨意"], ans: 1 },
         { q: "代用箱須貼？", options: ["名牌", "重印完整 C-3", "序號", "傳單"], ans: 1 },
-        { q: "延遲責任誰擔？", options: ["LSMHK", "倉庫營運商", "海關", "客戶"], ans: 1 }
+        { q: "延遲報告責任由誰承擔？", options: ["LSMHK", "倉庫營運商", "海關", "客戶"], ans: 1 }
     ],
     p5: [
         { q: "內箱配送做法？", options: ["單獨貼標", "入中轉箱保護", "報紙", "散裝"], ans: 1 },
         { q: "內箱禁止單運原因？", options: ["省空間", "防損壞影響品質", "增費", "法律"], ans: 1 },
         { q: "中轉箱標記？", options: ["私人", "中轉箱標籤", "姓名", "醫院"], ans: 1 },
-        { q: "卡板高度？", options: ["亂", "各棟一致防傾", "金字塔", "無限"], ans: 1 },
+        { q: "卡板堆放高度？", options: ["亂", "各棟一致防傾", "金字塔", "無限"], ans: 1 },
         { q: "Partial 箱放哪？", options: ["底", "最上方", "中", "角落"], ans: 1 },
         { q: "雨季包膜幾層？", options: ["1", "2", "3", "10"], ans: 2 },
         { q: "包膜技巧？", options: ["分離", "重疊連底部固定", "頂部", "膠水"], ans: 1 },
-        { q: "黑綁帶放哪？", options: ["底", "下數第三層", "頂", "每層"], ans: 1 },
+        { q: "黑綁帶 (D136R) 放哪？", options: ["底", "下數第三層", "頂", "每層"], ans: 1 },
         { q: "風車堆疊？", options: ["美觀", "增穩定", "省膜", "便掃描"], ans: 1 },
         { q: "散紙箱？", options: ["隨意", "固定否則不可", "副駕", "地板"], ans: 1 },
         { q: "防位移措施？", options: ["慢開", "木方固定", "人扶", "不理"], ans: 1 },
@@ -161,20 +162,20 @@ const allQuizData = {
         { q: "護角目的？", options: ["增重", "防勒壞箱", "標價", "集電"], ans: 1 },
         { q: "OK 堆放？", options: ["邊緣對齊重心平穩", "歪斜", "上重", "懸空"], ans: 0 },
         { q: "單棟堆放限？", options: ["隨時", "靠牆/圍板", "省空間", "電梯"], ans: 1 },
-        { q: "箱出卡板應？", options: ["推", "重調不許超出", "沒事", "多包膜"], ans: 1 },
+        { q: "紙箱超出邊緣應？", options: ["推", "重調不許超出", "沒事", "多包膜"], ans: 1 },
         { q: "包膜標籤？", options: ["蓋住", "朝外不模糊", "撕掉", "面內"], ans: 1 },
         { q: "綁帶力道？", options: ["最緊", "緊但不壓爛箱", "鬆", "不掉"], ans: 1 },
         { q: "工具放置？", options: ["門口", "固定防撞貨", "留客", "橫放"], ans: 1 },
         { q: "代用箱情境？", options: ["換色", "原箱損具標籤", "隱藏", "箱多"], ans: 1 }
     ],
     p6: [
-        { q: "物料盤點頻率？", options: ["天", "兩週", "季", "年"], ans: 1 },
+        { q: "物料盤點頻率？", options: ["天", "每兩週", "季", "年"], ans: 1 },
         { q: "核對表誰簽？", options: ["司機", "主管", "清潔", "客戶"], ans: 1 },
-        { q: "購買日期定義？", options: ["到倉", "報價日", "發票", "首用"], ans: 1 },
+        { q: "購買日期定義？", options: ["到倉", "確認報價日", "發票", "首用"], ans: 1 },
         { q: "過期物料？", options: ["用", "禁除非獲批", "轉賣", "丟棄"], ans: 1 },
         { q: "庫存降至何處通知？", options: ["一箱", "MOQ", "少一", "半空"], ans: 1 },
-        { q: "即將過期提前通知？", options: ["週", "2月", "過期後", "半年"], ans: 1 },
-        { q: "物料來源不含？", options: ["指定", "生產", "文具店", "SDT"], ans: 2 },
+        { q: "即將過期提前通知？", options: ["週", "2個月前", "過期後", "半年"], ans: 1 },
+        { q: "物料來源不含？", options: ["指定", "生產", "街邊文具店", "SDT"], ans: 2 },
         { q: "鋁箔袋期限？", options: ["6月", "2年", "5年", "永久"], ans: 1 },
         { q: "盤點差異處理？", options: ["調查匯報", "丟掉", "改數", "自費"], ans: 0 },
         { q: "物料領用原則？", options: ["LIFO", "FIFO", "隨機", "貴"], ans: 1 },
@@ -183,33 +184,34 @@ const allQuizData = {
         { q: "出貨前程序？", options: ["噴漆", "特採審核", "換內箱", "X光"], ans: 1 },
         { q: " Date Code 格式？", options: ["任意", "YYWW", "當天", "留白"], ans: 1 },
         { q: "重印標籤禁令？", options: ["手寫", "禁雙面膠須印新箱", "黑墨", "側"], ans: 1 },
-        { q: "台灣產地修正？", options: ["保持", "Taiwan, China", "Asia", "遮蓋"], ans: 1 },
+        { q: "台灣產地修正？", options: ["保持", "Made in Taiwan, China", "Asia", "遮蓋"], ans: 1 },
         { q: "特採車預約？", options: ["當天", "提前1天", "倉庫", "客自"], ans: 1 },
         { q: " Storage Limit？", options: ["租約", "在倉最長天數", "重", "班"], ans: 1 },
         { q: "特採取消應？", options: ["混出", "隔離/報廢", "捐", "走廊"], ans: 1 },
         { q: "移動過期區注意？", options: ["快", "不與正常貨混", "防護", "唱歌"], ans: 1 }
     ],
+    // P7 更新為你提供的專業強化版
     p7: [
-        { q: "特採出貨定義？", options: ["標準", "不符標或過期經同意出", "補發", "送修"], ans: 1 },
-        { q: "特採核准？", options: ["員", "LSMHK 部門/經理", "保安", "司機"], ans: 1 },
-        { q: "Customer Storage Limit？", options: ["倉大", "客接最晚期", "時", "額"], ans: 1 },
-        { q: "必貼關鍵標籤？", options: ["聖誕", "責任聲明標", "QR", "快遞"], ans: 1 },
-        { q: "特採標籤位置？", options: ["覆蓋", "顯眼處不遮原標", "底", "內"], ans: 1 },
-        { q: "不含細節？", options: ["型號", "S/N", "客年報", "數"], ans: 2 },
-        { q: "多 S/N 處理？", options: ["一", "列所有", "隨便", "不"], ans: 1 },
-        { q: "WW 指？", options: ["寬", "第幾週", "重", "日"], ans: 1 },
-        { q: "特採標籤顏色？", options: ["黑", "黃", "透", "紫"], ans: 1 },
-        { q: "責任聲明作用？", options: ["清款", "知悉狀況擔責", "努力", "進口"], ans: 1 },
-        { q: "受損應？", options: ["送", "通知評估", "換箱", "理"], ans: 1 },
-        { q: "單據顯示？", options: ["天氣", "Concession No.", "駕照", "地址"], ans: 1 },
-        { q: "SAP 標註？", options: ["正常", "Concession ship...", "急", "空"], ans: 1 },
-        { q: "存檔要求？", options: ["粉碎", "保留副本", "室", "機"], ans: 1 },
-        { q: "誰與客溝通？", options: ["梯員", "LSMHK 銷/品部", "叉員", "清"], ans: 1 },
-        { q: "產地台灣？", options: ["Asia", "Taiwan, China", "China", "空"], ans: 1 },
-        { q: "裝車建議？", options: ["胎", "拍照標籤狀況", "借", "畫"], ans: 1 },
-        { q: "v3.0 更新？", options: ["機械", "校正位置", "取消", "時"], ans: 1 },
-        { q: "啟動情境？", options: ["髒/過期但可用", "退款", "回", "生"], ans: 0 },
-        { q: "混裝？", options: ["攪", "明確分隔標示", "藏", "不"], ans: 1 }
+        { q: "根據 SOP-07，當產品超過儲存期限但仍需出貨時，必須啟動哪項程序？", options: ["報廢處理程序", "特採出貨處理程序 (Concession)", "正常出貨程序", "庫存調整程序"], ans: 1 },
+        { q: "填寫特採申請表時，必須列出的「DQC 號碼」是指？", options: ["排隊號碼", "特採核准編號 (Concession No.)", "預約號碼", "操作員代碼"], ans: 1 },
+        { q: "下列哪一項資訊「不屬於」特採申請表中必須列出的資訊？", options: ["產品型號代碼", "序列號 (Serial No.)", "生產線作業人數", "批次數量"], ans: 2 },
+        { q: "特採標籤 (Concession Label) 為了易於識別，通常使用哪種顏色？", options: ["綠色", "紅色", "黃色", "藍色"], ans: 2 },
+        { q: "若原標籤產地為 'Made in Taiwan'，應如何處理？", options: ["保持原狀", "黑筆塗掉 Taiwan", "更換或加貼 Made in Taiwan, China", "撕掉標籤"], ans: 2 },
+        { q: "特採出貨標籤上的日期代碼 (Date Code) 必須轉換為何種格式？", options: ["YYYY/MM/DD", "MM/DD/YYYY", "YYWW (年年週週)", "DD/MM/YY"], ans: 2 },
+        { q: "外箱除特採標籤外，還必須黏貼哪份重要法律文件標籤？", options: ["品質保證書", "責任聲明書 (Liability Declaration)", "運輸保險單", "產品說明書"], ans: 1 },
+        { q: "「責任聲明書」標籤的正確黏貼位置為何？", options: ["紙箱底部", "與特採標籤一併貼在顯眼處且不遮原標籤", "紙箱內部", "簽收單背面"], ans: 1 },
+        { q: "在 SAP 系統備註欄中，應如何正確標註特採資訊？", options: ["標註 Gift", "標註 Concession shipment per [DQC 號碼]", "標註 Damaged Goods", "無須標註"], ans: 1 },
+        { q: "申請表中的 'Customer Storage Limit' 代表什麼意義？", options: ["生產日期", "租約到期日", "客戶接受特採產品的最晚有效期限", "貨車進倉日"], ans: 2 },
+        { q: "若特採品出貨前發現真空失效或破損，應如何處理？", options: ["繼續出貨", "通知 LSMHK 重新進行 DQC 評估", "自行膠帶封口", "更換普通袋"], ans: 1 },
+        { q: "根據修訂版 3.0，特採貨物的相關記錄應如何管理？", options: ["立即銷毀", "倉庫必須保留副本存檔供稽核", "交給司機帶走", "存在手機拍照"], ans: 1 },
+        { q: "當涉及 'Made in Taiwan, China' 時，標籤需貼在哪些層級？", options: ["僅外箱", "僅內箱", "僅鋁箔袋", "外箱、內箱及鋁箔袋均需處理"], ans: 3 },
+        { q: "負責在特採申請表上進行最終簽署核准的人員是？", options: ["搬運工", "LSMHK 負責人員或經理", "司機", "清潔人員"], ans: 1 },
+        { q: "特採處理重新包裝 (Repack) 時，標籤黏貼的「禁令」為何？", options: ["嚴禁使用雙面膠帶", "禁止使用黑墨水", "標籤必須歪斜", "只能貼頂部"], ans: 0 },
+        { q: "裝箱單 (Packing List) 必須包含哪些詳細重量資訊？", options: ["僅淨重", "僅總重", "淨重、毛重及產地 (COO)", "無須標註"], ans: 2 },
+        { q: "裝車前，操作員最建議執行的「證據保存」動作是？", options: ["清理車廂", "對標籤、聲明書及裝載狀況進行拍照記錄", "與司機合照", "檢查駕照"], ans: 1 },
+        { q: "申請表中的 'In-House Date' (入倉日期) 的重要性為何？", options: ["用於判斷過期程度", "計算運費", "決定優先權", "報關日期"], ans: 0 },
+        { q: "若特採品與正常品放在同個卡板，應遵循哪項規範？", options: ["隨意混合", "必須清晰分隔且特採標籤朝外", "藏在底層", "用黑膜完全包覆"], ans: 1 },
+        { q: "「公司印章」(Company Seal) 應加蓋在哪些文件上？", options: ["筆記本", "所有隨貨出貨文件 (Invoice/PL)", "考勤表", "維修單"], ans: 1 }
     ]
 };
 
@@ -227,10 +229,10 @@ function startQuiz(key) {
         p1: "Part 1: Inbound & Concession",
         p2: "Part 2: 營運守則",
         p3: "Part 3: IC 重新包裝",
-        p4: "Part 4: 異常收貨",
+        p4: "Part 4: 異常處理及收貨",
         p5: "Part 5: 卡板防護",
-        p6: "Part 6: 物料與過期處理",
-        p7: "Part 7: 特採規範"
+        p6: "Part 6: 物料及過期處理",
+        p7: "Part 7: 特採品 (Concession) 處理"
     };
     user.topic = topicMap[key];
     currentQuestions = allQuizData[key];
@@ -282,11 +284,10 @@ function check(btn, qIdx, optIdx) {
 }
 
 function finishQuiz() {
-    if (!confirm("確定要提交結果嗎？")) return;
+    if (!confirm("確定要提交測驗結果嗎？")) return;
     const btn = document.getElementById("submit-btn");
     btn.disabled = true; btn.innerText = "提交中...";
     
-    // 使用您最新的 GAS URL
     const gasUrl = "https://script.google.com/macros/s/AKfycbwibUbNH_RAsu5heX1fhgg--b3eZTVxjSor-46hxbo2CWKiPWcjL5a8Upff0alzh_xyAw/exec";
 
     fetch(gasUrl, {
@@ -301,7 +302,7 @@ function finishQuiz() {
             wrongAnswers: wrongList.join(", ") || "無"
         })
     }).then(() => {
-        alert(`完成！\n得分：${score}/${currentQuestions.length}\n錯題：${wrongList.join(", ") || "無"}`);
+        alert(`測驗完成！\n得分：${score}/${currentQuestions.length}\n錯誤題號：${wrongList.join(", ") || "無"}`);
         location.reload();
     });
 }
