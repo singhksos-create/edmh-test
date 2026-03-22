@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDMH 流程內部測驗系統</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #f4f7f9; color: #333; padding: 20px; line-height: 1.6; }
+        .container { max-width: 650px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #1a73e8; text-align: center; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 6px; font-size: 18px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        .btn-primary { background-color: #1a73e8; color: white; }
+        .btn-primary:hover { background-color: #155cb0; }
+        .btn-submit { background-color: #34a853; color: white; margin-top: 30px; }
+        .btn-submit:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        .question-block { margin-top: 25px; padding: 20px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; }
+        .q-text { font-size: 17px; font-weight: bold; margin-bottom: 15px; color: #202124; }
+        .option-btn { display: block; width: 100%; text-align: left; padding: 12px; margin-bottom: 10px; background-color: #fff; border: 1px solid #dadce0; border-radius: 6px; cursor: pointer; font-size: 15px; transition: 0.2s; }
+        .option-btn:hover:not(:disabled) { background-color: #f8f9fa; border-color: #1a73e8; }
+        .option-btn:disabled { cursor: not-allowed; }
+        .feedback { margin-top: 10px; font-weight: bold; padding: 12px; border-radius: 6px; display: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="login-section">
+    <h2>EDMH 流程測驗登入</h2>
+    <div class="input-group">
+        <label for="userName">您的姓名</label>
+        <input type="text" id="userName" placeholder="例如：王小明">
+    </div>
+    <div class="input-group">
+        <label for="userPhone">您的電話號碼</label>
+        <input type="text" id="userPhone" placeholder="例如：0912345678">
+    </div>
+    <button class="btn btn-primary" onclick="startQuiz()">進入測驗</button>
+    <p id="error-msg" style="color: #d93025; text-align: center; display: none; margin-top: 15px;">⚠️ 請務必填寫姓名與電話！</p>
+</div>
+
+<div class="container" id="quiz-section" style="display: none;">
+    <h2>📝 專業流程測試 (20題)</h2>
+    <div id="questions-container"></div>
+    <button id="final-submit" class="btn btn-submit" onclick="finishQuiz()">提交測驗結果</button>
+</div>
+
+<script>
+let user = { name: "", phone: "" };
+let score = 0;
+
+const quizData = [
+  { q: "在 Inbound 流程中，SAP 會自動執行哪兩個動作到 in-transit plant？", options: ["GR 和 IR", "TO 和 SO", "PO 和 PR", "AWB 和 CO"], ans: 0 },
+  { q: "誰負責根據 DVAI 報告將 GR 記錄過帳 (post) 到倉庫系統？", options: ["EDMH BU", "Warehouse", "LSMHK Office", "SAP 系統"], ans: 2 },
+  { q: "收貨時如果標籤上有『TAIWAN』，它會標示在哪兩個字眼下方？", options: ["EXPORT 或 IMPORT", "DIFFUSED 或 ASSEMBLED", "INBOUND 或 OUTBOUND", "PASSED 或 FAILED"], ans: 1 },
+  { q: "收到哪一種產品時，必須額外發送 Email 給 LSMHK office？", options: ["E13 產品", "TAIWAN 庫存", "Automotive (汽車) 產品", "Expiry 庫存"], ans: 2 },
+  { q: "哪兩種產品需要掃描序號和數量到 Excel 檔案中？", options: ["E13 和 Automotive", "TAIWAN 和 E13", "Expiry 和 Concession", "Diffused 和 Assembled"], ans: 0 },
+  { q: "對於『E13』紙箱，為何倉庫需要保留每箱數量的記錄？", options: ["為了計算運費", "為了訂單分配用途 (Allocation)", "為了報廢申請", "為了更新 SAP 價格"], ans: 1 },
+  { q: "Automotive 產品掃描序號的主要目的是？", options: ["用於每月按序號層級進行的庫存盤點", "用於申請出口許可", "用於標註有效期限", "用於更換包裝"], ans: 0 },
+  { q: "當系統自動建立 TO 時，通常會建議放置在哪個區域？", options: ["檢驗區", "申請區", "空儲位 (empty bin) 或 塊區 (block area)", "出口區"], ans: 2 },
+  { q: "流程中的 TO 縮寫代表什麼？", options: ["Transfer Order", "Total Output", "Transport Office", "Task Option"], ans: 0 },
+  { q: "Reference # 欄位的正確格式是什麼？", options: ["日期 + 序號", "Material code + 數量", "AWB # + 國家代碼 (如 TW)", "Batch # + 廠商代碼"], ans: 2 },
+  { q: "處理過期庫存 (Expiry) 申請時，需要拍哪些照片？", options: ["僅外箱", "外箱 (Outer box) 與 鋁箔袋 (AL bag) 上的工廠標籤", "貨車司機照片", "倉庫全景圖"], ans: 1 },
+  { q: "準備 Concession Bincard 時，必須附上什麼文件？", options: ["核准的 Concession Form", "原始發票", "司機簽單", "空箱照片"], ans: 0 },
+  { q: "在 SAP 中執行『Release Block stock』是誰的職責？", options: ["Warehouse", "LSMHK Office", "Forwarder", "EDMH BU"], ans: 1 },
+  { q: "申請 Concession 期間，實體貨物應存放在哪個區域？", options: ["Expiry stock 區", "Appling Concession 區", "Approved Concession 區", "Scrap 區"], ans: 1 },
+  { q: "當 Concession 正式核准後，實體貨物應移往何處？", options: ["Approved Concession 區", "In-transit 區", "裝卸碼頭", "On-hand plant"], ans: 0 },
+  { q: "Concession number 應該貼在貨物的哪裡？", options: ["棧板底部", "紙箱上 (Carton box)", "辦公室門口", "SAP 螢幕旁"], ans: 1 },
+  { q: "在 SAP 解除凍結 (Release) 庫存是為了讓系統建立什麼？", options: ["SO (Sales Order)", "PO (Purchase Order)", "GR (Goods Receipt)", "PR (Purchase Requisition)"], ans: 0 },
+  { q: "若收貨發現損壞 (Cargo damage)，倉庫的首要動作是？", options: ["直接拒收", "自行修復", "提供資訊並拍照回報", "更換新紙箱"], ans: 2 },
+  { q: "Outbound 流程核對訂單資訊時，應參照哪份文件？", options: ["核准的 Concession Form", "DVAI 報告", "進口許可證", "員工手冊"], ans: 0 },
+  { q: "列印出來的 Concession Label 最後應如何處理？", options: ["存檔備查", "貼在實體庫存上 (Attach to stock)", "交給快遞公司", "貼在電腦主機上"], ans: 1 }
+];
+
+function startQuiz() {
+    const name = document.getElementById("userName").value.trim();
+    const phone = document.getElementById("userPhone").value.trim();
+    if (!name || !phone) {
+        document.getElementById("error-msg").style.display = "block";
+        return;
+    }
+    user.name = name;
+    user.phone = phone;
+    document.getElementById("login-section").style.display = "none";
+    document.getElementById("quiz-section").style.display = "block";
+    renderQuiz();
+}
+
+function renderQuiz() {
+    const container = document.getElementById("questions-container");
+    quizData.forEach((item, idx) => {
+        let qDiv = document.createElement("div");
+        qDiv.className = "question-block";
+        qDiv.innerHTML = `<p class="q-text">${idx+1}. ${item.q}</p>`;
+        
+        item.options.forEach((opt, optIdx) => {
+            let btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => check(btn, idx, optIdx);
+            qDiv.appendChild(btn);
+        });
+        
+        let fb = document.createElement("div");
+        fb.id = "fb-" + idx;
+        fb.className = "feedback";
+        qDiv.appendChild(fb);
+        container.appendChild(qDiv);
+    });
+}
+
+function check(btn, qIdx, optIdx) {
+    const correctIdx = quizData[qIdx].ans;
+    const correctText = quizData[qIdx].options[correctIdx];
+    const fb = document.getElementById("fb-" + qIdx);
+    const btns = btn.parentElement.querySelectorAll(".option-btn");
+    
+    btns.forEach(b => b.disabled = true);
+    fb.style.display = "block";
+
+    if (optIdx === correctIdx) {
+        score++;
+        btn.style.backgroundColor = "#e6ffed";
+        btn.style.borderColor = "#28a745";
+        fb.innerText = "✅ 正確！";
+        fb.style.color = "#155724";
+        fb.style.backgroundColor = "#d4edda";
+    } else {
+        btn.style.backgroundColor = "#ffeef0";
+        btn.style.borderColor = "#d73a49";
+        fb.innerHTML = `❌ 錯誤。正確答案是：<br><b>${correctText}</b>`;
+        fb.style.color = "#721c24";
+        fb.style.backgroundColor = "#f8d7da";
+    }
+}
+
+function finishQuiz() {
+    const submitBtn = document.getElementById("final-submit");
+    submitBtn.disabled = true;
+    submitBtn.innerText = "正在傳送結果...";
+
+    const gasUrl = "https://script.google.com/macros/s/AKfycby7JdhztIjttmfSKkOBQcJq6hnw2Y5XpSowxw6NPI6A30FxPG0rSfKj2cSz10In_Gg_2w/exec"; 
+
+    const payload = {
+        name: user.name,
+        phone: user.phone,
+        score: score,
+        total: quizData.length
+    };
+
+    fetch(gasUrl, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(payload)
+    })
+    .then(() => {
+        alert(`測驗完成！\n姓名：${user.name}\n得分：${score} / ${quizData.length}\n結果已記錄到試算表。`);
+        location.reload();
+    })
+    .catch(err => {
+        console.error("Error:", err);
+        alert("提交出錯，但您的分數為: " + score);
+        submitBtn.disabled = false;
+        submitBtn.innerText = "重新提交結果";
+    });
+}
+</script>
+</body>
+</html>
